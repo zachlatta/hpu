@@ -3,3 +3,7 @@
 name = "human-processor"
 version = "0.0.1"
 authors = ["Zach Latta <zach@zachlatta.com>"]
+
+[dependencies]
+
+hyper = "0.1.11"
