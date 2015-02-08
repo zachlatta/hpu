@@ -47,7 +47,7 @@ var DefaultLayout = React.createClass({
     ) : (
       <div className="jumbotron">
         <div className="container text-center">
-          <h1>Human Processor</h1>
+          <h1>Human Processing Unit</h1>
           <p>Run programs with human beings.</p>
         </div>
       </div>

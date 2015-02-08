@@ -20,7 +20,7 @@ var HomePage = React.createClass({
   },
 
   componentWillMount() {
-    PageActions.set({title: 'Human Processor'});
+    PageActions.set({title: 'Human Processing Unit'});
   },
 
   render() {

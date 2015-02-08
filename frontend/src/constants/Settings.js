@@ -11,7 +11,7 @@ module.exports = {
   defaults: {
 
     page: {
-      title: 'Human Processor',
+      title: 'Human Processing Unit',
       description: 'A computer CPU implemented on top of actual humans.',
       keywords: null
 
