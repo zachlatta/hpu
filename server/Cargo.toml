@@ -6,7 +6,15 @@ authors = ["Zach Latta <zach@zachlatta.com>"]
 
 [dependencies]
 
+postgres = "*"
+r2d2 = "*"
+r2d2_postgres = "*"
+typemap = "*"
+rustc-serialize = "*"
 iron = "*"
 
 [dependencies.rustless]
 git = "https://github.com/rustless/rustless"
+
+[dependencies.time]
+git = "https://github.com/rust-lang/time"
