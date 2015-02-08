@@ -10,7 +10,7 @@
 
 var React = require('react');
 var PageActions = require('../../actions/PageActions');
-var TableBox = require('../../components/TableBox/TableBox.js');
+var JobInterface = require('../../components/JobInterface/JobInterface.js');
 var App = require('../Application');
 
 var HomePage = React.createClass({
@@ -27,7 +27,7 @@ var HomePage = React.createClass({
     return (
       /* jshint ignore:start */
       <div className="container">
-        <TableBox title="Labels" />
+        <JobInterface />
       </div>
       /* jshint ignore:end */
     );

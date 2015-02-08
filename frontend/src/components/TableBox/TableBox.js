@@ -1,5 +1,4 @@
 var React = require('react');
-
 var TableList = require('../TableList/TableList.js');
 
 var TableBox = React.createClass({
