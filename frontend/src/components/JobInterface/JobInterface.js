@@ -24,7 +24,7 @@ var JobInterface = React.createClass({
 
       registers: [{
         name: "EAX",
-        value: null
+        value: "foo"
       }, {
         name: "ECX",
         value: null
