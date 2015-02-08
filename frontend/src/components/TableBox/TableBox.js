@@ -4,7 +4,7 @@ var TableList = require('../TableList/TableList.js');
 
 var TableBox = React.createClass({
   getInitialState: function () {
-    return {data: [{id: "1000", desc: "test"}, {id: "1000", desc: "test"}]};
+    return {data: [{id: "1000", desc: "test"}, {id: "1001", desc: "test"}]};
   },
   render: function () {
     return (

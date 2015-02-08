@@ -9,12 +9,12 @@ var TableList = React.createClass({
     var keys = Object.keys(this.props.data[0]);
     var headerColumns = keys.map(function (key) {
       return (
-        <th>{key}</th>
+        <th key={key}>{key}</th>
       );
     });
     var rows = this.props.data.map(function (row) {
       return (
-        <TableRow data={row} />
+        <TableRow key={row.id} data={row} />
       );
     });
 
