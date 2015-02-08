@@ -29,19 +29,31 @@ impl DatabaseExt for rustless::Application {
     }
 }
 
+#[derive(Debug, RustcEncodable)]
 pub struct Program {
-    id: i32
+    id: i32,
 }
 
-pub enum InstructionType {
-    DB,
-    EQU,
-    MOV,
-}
-
+#[derive(Debug, RustcEncodable)]
 pub struct Instruction {
     id: i32,
-    
+    label: String,
+    itype: String,
+    register: String,
+    argument: String,
+}
+
+#[derive(Debug, RustcEncodable)]
+pub struct Label {
+    id: i32,
+    name: String,
+    value: String,
+}
+
+#[derive(Debug, RustcEncodable)]
+pub struct Storage {
+    address: i32,
+    value: String,
 }
 
 pub fn setup_db(connection_str: &str, pool_size: u32) -> PostgresPool {
@@ -61,53 +73,62 @@ fn setup_tables(cn: &postgres::GenericConnection) {
         DROP TABLE IF EXISTS programs CASCADE;
         DROP TABLE IF EXISTS instructions CASCADE;
         DROP TABLE IF EXISTS labels CASCADE;
+        DROP TABLE IF EXISTS storage CASCADE;
 
         DROP TYPE IF EXISTS instruction_type CASCADE;
         DROP TYPE IF EXISTS job_status CASCADE;
 
-        CREATE TYPE instruction_type AS ENUM('MOV', 'DB', 'EQU', 'INT');
-        CREATE TYPE job_status AS ENUM('inactive', 'in_progress', 'completed', 'failed');
-
         CREATE TABLE programs (
             id serial PRIMARY KEY,
-            eax text,
-            ebx text,
-            ecx text,
-            edx text
+            eax text NOT NULL DEFAULT '',
+            ebx text NOT NULL DEFAULT '',
+            ecx text NOT NULL DEFAULT '',
+            edx text NOT NULL DEFAULT ''
         );
 
         CREATE TABLE instructions (
             id serial PRIMARY KEY,
-            program integer references programs(id),
-            label text,
-            type instruction_type,
-            register text,
-            argument text,
-            status job_status DEFAULT 'inactive'
+            program integer references programs(id) NOT NULL,
+            label text NOT NULL DEFAULT '',
+            type text NOT NULL DEFAULT '',
+            register text NOT NULL DEFAULT '',
+            argument text NOT NULL DEFAULT '',
+            status text DEFAULT 'inactive'
         );
 
         CREATE TABLE labels (
             id serial PRIMARY KEY,
-            program integer references programs(id),
-            name text,
-            value text
+            program integer references programs(id) NOT NULL,
+            name text NOT NULL DEFAULT '',
+            value text NOT NULL DEFAULT ''
+        );
+
+        CREATE TABLE storage (
+            address serial PRIMARY KEY,
+            program integer references programs(id) NOT NULL,
+            value text NOT NULL DEFAULT ''
         );
 
         INSERT INTO programs DEFAULT VALUES;
 
         INSERT INTO instructions (label, program, type, register, argument) VALUES
-            ('msg', 1, 'DB', null, 'Hello World'),
-            ('len', 1, 'EQU', null, '$-msg'),
+            ('msg', 1, 'DB', '', 'Hello World'),
+            ('len', 1, 'EQU', '', '$-msg'),
 
-            (null, 1, 'MOV', 'edx', 'len'),
-            (null, 1, 'MOV', 'ecx', 'msg'),
-            (null, 1, 'MOV', 'ebx', '1'),
-            (null, 1, 'MOV', 'eax', '4'),
-            (null, 1, 'INT', null, '0x80'),
+            ('', 1, 'MOV', 'edx', 'len'), ('', 1, 'MOV', 'ecx', 'msg'),
+            ('', 1, 'MOV', 'ebx', '1'),
+            ('', 1, 'MOV', 'eax', '4'),
+            ('', 1, 'INT', '', '0x80'),
 
-            (null, 1, 'MOV', 'ebx', '0'),
-            (null, 1, 'MOV', 'eax', '1'),
-            (null, 1, 'INT', null, '0x80');
+            ('', 1, 'MOV', 'ebx', '0'),
+            ('', 1, 'MOV', 'eax', '1'),
+            ('', 1, 'INT', '', '0x80');
+
+        INSERT INTO labels (program, name, value) VALUES
+            (1, 'sample', 'sample');
+
+        INSERT INTO storage (program, value) VALUES
+            (1, 'sample');
     "#).unwrap();
 }
 
@@ -116,10 +137,59 @@ fn main() {
         api.prefix("api");
         api.version("v1", rustless::Versioning::Path);
 
-        api.namespace("jobs", |jobs_ns| {
-            jobs_ns.get("server_status", |endpoint| {
-                endpoint.handle(|client, _params| {
-                    client.text("Everything is OK\n".to_string())  
+        api.namespace("instructions", |instr_ns| {
+            instr_ns.get("get_next", |endpoint| {
+                endpoint.handle(|mut client, _params| {
+                    let cn = client.app.db();
+
+                    let statement = cn.prepare("SELECT id, label, type, register, argument FROM instructions WHERE status='inactive' LIMIT 1;").ok().expect("Connection is broken");
+                    let instruction_list: Vec<Instruction> = statement.query(&[]).unwrap().map(|row| {
+                        Instruction {
+                            id: row.get(0),
+                            label: row.get(1),
+                            itype: row.get(2),
+                            register: row.get(3),
+                            argument: row.get(4)
+                        }
+                    }).collect();
+
+                    client.set_json_content_type();
+                    client.text(json::encode(&instruction_list).ok().unwrap())  
+                })
+            });
+
+            instr_ns.get("labels", |endpoint| {
+                endpoint.handle(|mut client, _params| {
+                    let cn = client.app.db();
+
+                    let statement = cn.prepare("SELECT id, name, value FROM labels;").ok().expect("Connection is broken");
+                    let label_list: Vec<Label> = statement.query(&[]).unwrap().map(|row| {
+                        Label {
+                            id: row.get(0),
+                            name: row.get(1),
+                            value: row.get(2)
+                        }
+                    }).collect();
+
+                    client.set_json_content_type();
+                    client.text(json::encode(&label_list).ok().unwrap())  
+                })
+            });
+
+            instr_ns.get("storage", |endpoint| {
+                endpoint.handle(|mut client, _params| {
+                    let cn = client.app.db();
+
+                    let statement = cn.prepare("SELECT address, value FROM storage;").ok().expect("Connection is broken");
+                    let storage_list: Vec<Storage> = statement.query(&[]).unwrap().map(|row| {
+                        Storage {
+                            address: row.get(0),
+                            value: row.get(1),
+                        }
+                    }).collect();
+
+                    client.set_json_content_type();
+                    client.text(json::encode(&storage_list).ok().unwrap())  
                 })
             });
         })
@@ -137,6 +207,6 @@ fn main() {
     app.ext.insert::<AppDb>(pool);
 
     let chain = iron::Chain::new(app);
-    iron::Iron::new(chain).listen("localhost:4000").unwrap();
+    iron::Iron::new(chain).listen("0.0.0.0:4000").unwrap();
     println!("On 4000");
 }
