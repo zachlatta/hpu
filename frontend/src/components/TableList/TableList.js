@@ -8,9 +8,11 @@ var TableList = React.createClass({
     // keys, if not, add them)
     var keys = Object.keys(this.props.data[0]);
     var headerColumns = keys.map(function (key) {
-      return (
-        <th key={key}>{key}</th>
-      );
+      if (key != "id") {
+        return (
+          <th key={key}>{key}</th>
+        );
+      }
     });
     var rows = this.props.data.map(function (row) {
       return (

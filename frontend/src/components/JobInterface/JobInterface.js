@@ -4,6 +4,16 @@ var Registers = require('../Registers/Registers.js');
 var TableBox = require('../TableBox/TableBox.js');
 
 var JobInterface = React.createClass({
+  onLabelSubmit: function (label) {
+    var labels = this.state.labels;
+    console.log("submitting label", label);
+    this.setState({labels: labels.concat([label])});
+  },
+  onStorageSubmit: function (data) {
+    var storage = this.state.storage;
+    console.log("submitting storage", data);
+    this.setState({storage: storage.concat([data])});
+  },
   getInitialState: function () {
     return {
       labels: [{
@@ -50,8 +60,8 @@ var JobInterface = React.createClass({
             <Instructions data={this.state.instructions} />
           </div>
           <div className="col-md-4">
-            <TableBox title="Labels" data={this.state.labels} />
-            <TableBox title="Storage" data={this.state.storage} />
+            <TableBox title="Labels" data={this.state.labels} onSubmit={this.onLabelSubmit} />
+            <TableBox title="Storage" data={this.state.storage} onSubmit={this.onStorageSubmit} />
           </div>
         </div>
         <div className="row">
