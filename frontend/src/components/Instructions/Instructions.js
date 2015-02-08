@@ -5,7 +5,7 @@ var Instructions = React.createClass({
     return (
       <div>
         <h2>Instructions</h2>
-        <p><b>{this.props.data.instruction}</b>: {this.props.data.text}</p>
+        <p><b>{this.props.data.itype}</b>: {this.props.data.text}</p>
       </div>
     )
   }

@@ -1,4 +1,6 @@
 var React = require('react');
+var request = require('superagent');
+
 var Instructions = require('../Instructions/Instructions.js');
 var Registers = require('../Registers/Registers.js');
 var TableBox = require('../TableBox/TableBox.js');
@@ -13,6 +15,36 @@ var JobInterface = React.createClass({
     var storage = this.state.storage;
     console.log("submitting storage", data);
     this.setState({storage: storage.concat([data])});
+  },
+  loadNextInstructionsFromServer: function () {
+    var that = this;
+    request.get('http://mew.hackedu.us:4000/api/v1/instructions/get_next', function (res) {
+      var next = JSON.parse(res.text)[0];
+      switch (next.itype) {
+        case 'DB':
+          next.text = 'Create a new item in storage called `' + next.label + '` with the contents `' + next.argument + '`.';
+          break;
+        case 'MOV':
+          next.text = 'Put the value of `' + next.argument + '` into the `' + next.register + '` register.';
+          break;
+      }
+
+      that.setState({instructions: next});
+    });
+  },
+  loadLabelsFromServer: function () {
+    var that = this;
+    request.get('http://mew.hackedu.us:4000/api/v1/instructions/labels', function (res) {
+      var labels = JSON.parse(res.text);
+      that.setState({labels: labels});
+    });
+  },
+  loadStorageFromServer: function () {
+    var that = this;
+    request.get('http://mew.hackedu.us:4000/api/v1/instructions/storage', function (res) {
+      var storage = JSON.parse(res.text);
+      that.setState({storage: storage});
+    });
   },
   getInitialState: function () {
     return {
@@ -47,10 +79,15 @@ var JobInterface = React.createClass({
       }],
 
       instructions: {
-        instruction: "MOV",
+        itype: "MOV",
         text: "Put the value of `len` into `EAX`."
       }
     }
+  },
+  componentDidMount: function() {
+    this.loadNextInstructionsFromServer();
+    this.loadLabelsFromServer();
+    this.loadStorageFromServer();
   },
   render: function () {
     return (
