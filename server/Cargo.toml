@@ -6,4 +6,7 @@ authors = ["Zach Latta <zach@zachlatta.com>"]
 
 [dependencies]
 
-hyper = "0.1.11"
+iron = "*"
+
+[dependencies.rustless]
+git = "https://github.com/rustless/rustless"

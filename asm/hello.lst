@@ -1,0 +1,26 @@
+     1                                  ;  hello.asm  a first program for nasm for Linux, Intel, gcc
+     2                                  ;
+     3                                  ; assemble: nasm -f elf -l hello.lst  hello.asm
+     4                                  ; link:   gcc -o hello  hello.o
+     5                                  ; run:          hello 
+     6                                  ; output is:  Hello World 
+     7                                  
+     8                                        SECTION .data       ; data section
+     9 00000000 48656C6C6F20576F72-     msg:  db "Hello World"    ; the string to print, 10=cr
+    10 00000009 6C64               
+    11                                  len:  equ $-msg           ; "$" means "here"
+    12                                                            ; len is a value, not an address
+    13                                  
+    14                                        SECTION .text       ; code section
+    15                                        global main         ; make label available to linker 
+    16                                  main:                     ; standard  gcc  entry point
+    17                                    
+    18 00000000 BA0B000000                    mov edx,len         ; arg3, length of string to print
+    19 00000005 B9[00000000]                  mov ecx,msg         ; arg2, pointer to string
+    20 0000000A BB01000000                    mov ebx,1           ; arg1, where to write, screen
+    21 0000000F B804000000                    mov eax,4           ; write sysout command to int 80 hex
+    22 00000014 CD80                          int 0x80            ; interrupt 80 hex, call kernel
+    23                                    
+    24 00000016 BB00000000                    mov ebx,0           ; exit code, 0=normal
+    25 0000001B B801000000                    mov eax,1           ; exit command to kernel
+    26 00000020 CD80                          int 0x80            ; interrupt 80 hex, call kernel
